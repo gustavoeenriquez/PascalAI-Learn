@@ -55,6 +55,12 @@ begin
   CheckGrad(A, function(const P: TTensor): TTensor begin Result := MSE(P.Sigmoid, Fijo); end, 'sigmoide');
   CheckGrad(A, function(const P: TTensor): TTensor begin Result := (3.0 * P).Relu.Sum; end, 'relu');
   CheckGrad(A, function(const P: TTensor): TTensor begin Result := CrossEntropy(P, [0, 3, 1]); end, 'entropía cruzada');
+  CheckGrad(A, function(const P: TTensor): TTensor begin Result := MSE(P.Gather([2, 0, 2, 1]).MatMul(B), TTensor.Random(4, 2, TRandom.Create(9))); end, 'gather');
+  CheckGrad(A, function(const P: TTensor): TTensor begin Result := MSE(P.Transpose.MatMul(Fijo), TTensor.Random(4, 4, TRandom.Create(8))); end, 'traspuesta');
+  var Q := TTensor.Random(3, 3, Rng);
+  var Peso := TTensor.Random(3, 3, Rng);
+  CheckGrad(Q, function(const P: TTensor): TTensor begin Result := (P.SoftmaxRows * Peso).Sum; end, 'softmax');
+  CheckGrad(Q, function(const P: TTensor): TTensor begin Result := (P.SoftmaxRows(True) * Peso).Sum; end, 'softmax causal');
   // un nodo usado dos veces: los gradientes se suman
   CheckGrad(A, function(const P: TTensor): TTensor begin Result := (P * P + P).Sum; end, 'usado dos veces');
 end;
@@ -70,6 +76,15 @@ begin
   Assert.Equal('[0, 2]', '[' + IntToStr(ArgMaxRows(TTensor.FromRows([[3, 1], [0, 1]]))[0]) + ', 2]');
   var P := Softmax(TTensor.FromRows([[1, 1]]));
   Assert.True(Abs(P[0, 0] - 0.5) < 1e-12);
+end;
+
+procedure TestSoftmaxCausal;
+begin
+  var S := TTensor.FromRows([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).SoftmaxRows(True);
+  Assert.Equal(1.0, S.Get(0, 0), 'la primera fila solo se ve a sí misma');
+  Assert.Equal(0.0, S.Get(0, 1));
+  Assert.Equal(0.0, S.Get(1, 2), 'la segunda no ve la tercera columna');
+  Assert.True(Abs(S.Get(2, 0) + S.Get(2, 1) + S.Get(2, 2) - 1) < 1e-12, 'cada fila suma 1');
 end;
 
 procedure TestXor;

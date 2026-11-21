@@ -63,6 +63,12 @@ type
     class operator Multiply(const A, B: TTensor): TTensor;
     class operator Multiply(K: Double; const A: TTensor): TTensor;
 
+    /// Las filas Ids de esta tabla, en ese orden (un embedding: la fila de cada token).
+    function Gather(const Ids: TArray<Integer>): TTensor;
+    function Transpose: TTensor;
+    /// Softmax de cada fila. Con Causal, la fila i solo mira las columnas 0..i (lo que vino antes): la
+    /// máscara de un modelo de lenguaje, que no puede ver el futuro.
+    function SoftmaxRows(Causal: Boolean = False): TTensor;
     function Tanh: TTensor;
     function Sigmoid: TTensor;
     function Relu: TTensor;
@@ -230,6 +236,51 @@ begin
     end;
 end;
 
+procedure GatherBackward(const G: TArray<Double>; const Ids: TArray<Integer>; var GA: TArray<Double>; M: Integer);
+begin
+  for var I := 0 to High(Ids) do
+  begin
+    var Row := Ids[I] * M;
+    for var J := 0 to M - 1 do
+      GA[Row + J] := GA[Row + J] + G[I * M + J];
+  end;
+end;
+
+procedure SoftmaxForward(const X: TArray<Double>; var Y: TArray<Double>; N, M: Integer; Causal: Boolean);
+begin
+  for var I := 0 to N - 1 do
+  begin
+    var Last := if Causal then Min(I, M - 1) else M - 1;
+    var Mx := X[I * M];
+    for var J := 1 to Last do
+      if X[I * M + J] > Mx then
+        Mx := X[I * M + J];
+    var S := 0.0;
+    for var J := 0 to M - 1 do
+    begin
+      if J <= Last then
+        Y[I * M + J] := System.Exp(X[I * M + J] - Mx)
+      else
+        Y[I * M + J] := 0;
+      S := S + Y[I * M + J];
+    end;
+    for var J := 0 to Last do
+      Y[I * M + J] := Y[I * M + J] / S;
+  end;
+end;
+
+procedure SoftmaxBackward(const Y, G: TArray<Double>; var GA: TArray<Double>; N, M: Integer);
+begin
+  for var I := 0 to N - 1 do
+  begin
+    var Dot := 0.0;
+    for var J := 0 to M - 1 do
+      Dot := Dot + G[I * M + J] * Y[I * M + J];
+    for var J := 0 to M - 1 do
+      GA[I * M + J] := GA[I * M + J] + Y[I * M + J] * (G[I * M + J] - Dot);
+  end;
+end;
+
 function TTensor.MatMul(const B: TTensor): TTensor;
 begin
   var NA := Node;
@@ -324,6 +375,63 @@ begin
       var GA := NA.Grad;
       for var I := 0 to High(R.Grad) do
         GA[I] := GA[I] + K * R.Grad[I];
+      NA.Grad := GA;
+    end;
+end;
+
+function TTensor.Gather(const Ids: TArray<Integer>): TTensor;
+begin
+  var NA := Node;
+  var M := NA.Cols;
+  Result := NewTensor(Length(Ids), M, [NA], 'gather');
+  var C := Result.Node.Data;
+  for var I := 0 to High(Ids) do
+    for var J := 0 to M - 1 do
+      C[I * M + J] := NA.Data[Ids[I] * M + J];
+  Result.Node.Data := C;
+  Result.Node.BackStep := procedure(R: TTensorNode)
+    begin
+      var GA := NA.Grad;
+      GatherBackward(R.Grad, Ids, GA, M);
+      NA.Grad := GA;
+    end;
+end;
+
+function TTensor.Transpose: TTensor;
+begin
+  var NA := Node;
+  var N := NA.Rows;
+  var M := NA.Cols;
+  Result := NewTensor(M, N, [NA], 'transpose');
+  var C := Result.Node.Data;
+  for var I := 0 to N - 1 do
+    for var J := 0 to M - 1 do
+      C[J * N + I] := NA.Data[I * M + J];
+  Result.Node.Data := C;
+  Result.Node.BackStep := procedure(R: TTensorNode)
+    begin
+      var GA := NA.Grad;
+      for var I := 0 to N - 1 do
+        for var J := 0 to M - 1 do
+          GA[I * M + J] := GA[I * M + J] + R.Grad[J * N + I];
+      NA.Grad := GA;
+    end;
+end;
+
+function TTensor.SoftmaxRows(Causal: Boolean): TTensor;
+begin
+  var NA := Node;
+  var N := NA.Rows;
+  var M := NA.Cols;
+  Result := NewTensor(N, M, [NA], 'softmax');
+  var Y := Result.Node.Data;
+  SoftmaxForward(NA.Data, Y, N, M, Causal);
+  Result.Node.Data := Y;
+  // dx = y · (g − Σ g·y) en cada fila
+  Result.Node.BackStep := procedure(R: TTensorNode)
+    begin
+      var GA := NA.Grad;
+      SoftmaxBackward(R.Data, R.Grad, GA, N, M);
       NA.Grad := GA;
     end;
 end;

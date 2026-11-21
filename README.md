@@ -38,6 +38,10 @@ Las soluciones y las rúbricas están en un repositorio privado para docentes.
 | `Pai.Learn.NN` | Capas densas, `TMLP` (perceptrón multicapa), `TSGD` y `TAdam` |
 | `Pai.Learn.Metrics` | Exactitud, matriz de confusión, precisión, exhaustividad, F1 |
 | `Pai.Learn.Unsupervised` | k-means y PCA |
+| `Pai.Learn.Text` | Tokenizadores (caracteres, palabras, BPE), vocabulario, n-gramas, `ILanguageModel` y `LMGenerate` (el modelo propio como `pascal/<Clase>`) |
+| `Pai.Learn.Embed` | Embeddings de palabras (word2vec, skip-gram con muestreo negativo) |
+| `Pai.Learn.Attention` | Atención causal y un transformer diminuto por caracteres |
+| `Pai.Learn.RL` | Q-learning en una cuadrícula |
 | `Pai.Learn.Plot` | Gráficos en SVG: líneas, puntos, la frontera de un perceptrón y laberintos |
 
 Los nombres de la biblioteca están en inglés, como Delphi; las lecciones, en el idioma del alumno.

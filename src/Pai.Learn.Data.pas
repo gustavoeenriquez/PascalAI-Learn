@@ -52,6 +52,9 @@ type
     /// valores de 0 a 1 (cuánta tinta), y la clase es el dígito. Train: 3823; si no, los 1797 de
     /// prueba (de otras personas). UCI Machine Learning Repository, CC BY 4.0 (doi 10.24432/C50P49).
     class function Digits(Train: Boolean = True): TDataset; static;
+    /// Un texto de datos/: 'cuentos' son los Cuentos de la selva de Horacio Quiroga (1918, dominio
+    /// público; de Wikisource).
+    class function Text(const Name: string): string; static;
     /// La carpeta datos/ de los cursos (PAI_LEARN o ~/.pai/learn).
     class function DataDir: string; static;
     /// 40 frutas para aprender (20 manzanas y 20 peras), en orden mezclado.
@@ -196,6 +199,14 @@ begin
   for var L in TFile.ReadAllLines(TPath.Combine(Datasets.DataDir, AFile)) do
     if L.Trim <> '' then
       Result := Result + [L.Trim];
+end;
+
+class function Datasets.Text(const Name: string): string;
+begin
+  var F := if SameText(Name, 'cuentos') then 'cuentos-de-la-selva.txt' else Name;
+  Result := TFile.ReadAllText(TPath.Combine(DataDir, F), TEncoding.UTF8);
+  if Result.StartsWith(#$FEFF) then
+    Result := Result.Substring(1);
 end;
 
 class function Datasets.Iris: TDataset;
