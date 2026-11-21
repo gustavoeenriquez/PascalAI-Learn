@@ -1,6 +1,6 @@
 # PascalAI-Learn
 
-Pascal nació para enseñar a programar. PascalAI-Learn usa [PascalAI](https://github.com/gustavoeenriquez/pai)
+Pascal nació para enseñar a programar. PascalAI-Learn usa PascalAI (el motor `pai`)
 para enseñar inteligencia artificial: el estudiante la construye con sus manos, en un lenguaje que puede
 leer de principio a fin, y solo al final la compara con un modelo de verdad.
 
@@ -10,7 +10,29 @@ leer de principio a fin, y solo al final la compara con un modelo de verdad.
 - **Cómo:** con `pai learn` (en el motor): `list` muestra las lecciones, `start NN` copia una y `check`
   corre sus pruebas y da pistas, sin mostrar la solución.
 
-La especificación está en el repo del motor: `docs/spec/10-ensenanza.md` (decisión D-317).
+Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG=pt`).
+
+## Instalar
+
+1. Descarga `pai` para tu sistema desde la página de
+   [descargas](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest) (Windows de 64 bits o Linux de
+   64 bits) y descomprímelo en una carpeta que esté en el `PATH`.
+2. Descarga estos cursos (`git clone https://github.com/gustavoeenriquez/PascalAI-Learn` o el .zip del
+   repositorio) y apunta `PAI_LEARN` a esa carpeta:
+
+   ```bash
+   export PAI_LEARN=~/PascalAI-Learn                 # Linux
+   $env:PAI_LEARN = "C:\ruta\PascalAI-Learn"         # Windows (PowerShell)
+   ```
+
+3. En una carpeta de trabajo vacía:
+
+   ```bash
+   pai learn list
+   pai learn start colegio/01
+   cd 01-reglas
+   pai learn check
+   ```
 
 ## Contenido
 
@@ -49,7 +71,7 @@ Los nombres de la biblioteca están en inglés, como Delphi; las lecciones, en e
 ## Probar
 
 ```bash
-./tools/test.sh            # con ../PascalAI/bin/win64/pai.exe, o PAI=/ruta/a/pai
+PAI=/ruta/a/pai ./tools/test.sh
 ```
 
 ## Licencia
