@@ -1,0 +1,12 @@
+[package]
+name = bibliotecario
+version = 0.1.0
+
+[models]
+Cerebro = mock/eco            ; sin red: repite lo que recibe
+; Cerebro = ollama/llama3.2     ; uno de verdad
+
+[classroom]
+sandbox = standard
+network = local
+budget = 0
