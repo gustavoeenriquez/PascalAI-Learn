@@ -1,5 +1,7 @@
 # PascalAI-Learn
 
+**Español** · [English](README.en.md)
+
 Pascal nació para enseñar a programar. PascalAI-Learn usa PascalAI (el motor `pai`)
 para enseñar inteligencia artificial: el estudiante la construye con sus manos, en un lenguaje que puede
 leer de principio a fin, y solo al final la compara con un modelo de verdad.
@@ -14,7 +16,15 @@ Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG
 
 ## Instalar
 
-1. Descarga `pai` (0.1.1 o posterior) para tu sistema desde la página de
+**Lo más fácil (Windows de 64 bits):** descarga `pascalai-ide-0.1.2-win64.zip` de la página de
+[descargas](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest), descomprímelo y abre `PaiIde.exe`
+(trae `pai`, no hace falta instalar nada). En Archivo → Abrir lección… (o «Aprender IA» en la pantalla de inicio)
+eliges una lección; si no tienes los cursos, «Descargar los cursos» los baja. Completa `inicio.pas` y comprueba con
+**Ctrl+Shift+L**: las pistas salen en la Salida.
+
+**Desde la consola (Windows, Linux):**
+
+1. Descarga `pai` (0.1.2 o posterior) para tu sistema desde la página de
    [descargas](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest) (Windows de 64 bits o Linux de
    64 bits) y descomprímelo en una carpeta que esté en el `PATH`. Para Windows on ARM hay una versión
    **sin probar** (`winarm64`); si falla, la de Windows de 64 bits también corre ahí, por emulación.
@@ -35,17 +45,17 @@ Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG
    pai learn check
    ```
 
-**Editor (opcional, Windows de 64 bits):** en la misma página está `pascalai-ide-0.1.1-win64.zip`, el editor de
-PascalAI con `pai` incluido: se descomprime y se abre `PaiIde.exe`, sin instalar nada. Colorea el código, completa
-nombres, marca los errores mientras escribes y muestra los gráficos `.svg` de las lecciones; la interfaz está en
-español, inglés o portugués (Ver → Idioma). Para usar `pai learn` desde la consola, pon esa carpeta en el `PATH`.
+El editor también colorea el código, completa nombres, marca los errores mientras escribes, muestra los
+gráficos `.svg` de las lecciones y tiene un asistente de IA (Ver → Conectar IA…: un Ollama local o del aula es
+gratis); la interfaz está en español, inglés o portugués (Ver → Idioma). Para usar `pai learn` desde la consola,
+pon la carpeta del editor en el `PATH`.
 
 ## Contenido
 
 | Carpeta | Qué hay |
 |---|---|
 | `src/` | La biblioteca `Pai.Learn`, escrita en PascalAI para que se pueda leer y depurar |
-| `cursos/colegio/`, `cursos/universidad/` | Las lecciones: `LEEME.md`, `inicio.pas` (con huecos) y `pruebas.pas` (colegio 01-05 y universidad 01-04) |
+| `cursos/colegio/`, `cursos/universidad/` | Las lecciones: `LEEME.md`, `inicio.pas` (con huecos) y `pruebas.pas` (colegio 01-10 y universidad 01-13) |
 | `datos/` | Los datos que no caben en el código, y `DATOS.md` con el origen y la licencia de cada uno |
 | `tests/` | Las pruebas de la biblioteca (`pai test`) |
 | `tools/` | `test.sh` |
@@ -84,6 +94,6 @@ PAI=/ruta/a/pai ./tools/test.sh
 
 El código, MIT (`LICENSE`). Los textos, las figuras y los datos propios, CC BY 4.0 (`LICENSE-CONTENT.md`).
 
-El motor `pai` de las descargas no es parte de este repositorio: se puede usar gratis con fines educativos y
-personales (su `LICENCIA.txt`). En Windows todavía no tiene firma de código, así que la primera vez SmartScreen
+El motor `pai` y el editor de las descargas no son parte de este repositorio: se pueden usar gratis con fines educativos y
+personales (su `LICENCIA.txt`). En Windows todavía no tienen firma de código, así que la primera vez SmartScreen
 puede avisar; el `LEEME.txt` de la descarga explica cómo verificar la suma SHA-256 y ejecutarlo.
