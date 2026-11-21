@@ -35,6 +35,11 @@ Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG
    pai learn check
    ```
 
+**Editor (opcional, Windows de 64 bits):** en la misma página está `pascalai-ide-0.1.1-win64.zip`, el editor de
+PascalAI con `pai` incluido: se descomprime y se abre `PaiIde.exe`, sin instalar nada. Colorea el código, completa
+nombres, marca los errores mientras escribes y muestra los gráficos `.svg` de las lecciones; la interfaz está en
+español, inglés o portugués (Ver → Idioma). Para usar `pai learn` desde la consola, pon esa carpeta en el `PATH`.
+
 ## Contenido
 
 | Carpeta | Qué hay |
