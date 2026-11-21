@@ -33,7 +33,11 @@ Las soluciones y las rúbricas están en un repositorio privado para docentes.
 | `Pai.Learn.Grad` | `TScalar`: gradiente automático sobre números sueltos (`Backward`) |
 | `Pai.Learn.Search` | Laberintos (`TMaze`), búsqueda en anchura y A* |
 | `Pai.Learn.Neighbors` | k vecinos más cercanos |
-| `Pai.Learn.Data` | Conjuntos de datos pequeños (`Datasets.Fruits`, `XorTable`) |
+| `Pai.Learn.Data` | Conjuntos de datos: frutas y XOR (generados), Iris y dígitos 8×8 (de `datos/`), `TDataset` con `Split` |
+| `Pai.Learn.Tensor` | `TTensor`: gradiente automático sobre matrices enteras, MSE y entropía cruzada |
+| `Pai.Learn.NN` | Capas densas, `TMLP` (perceptrón multicapa), `TSGD` y `TAdam` |
+| `Pai.Learn.Metrics` | Exactitud, matriz de confusión, precisión, exhaustividad, F1 |
+| `Pai.Learn.Unsupervised` | k-means y PCA |
 | `Pai.Learn.Plot` | Gráficos en SVG: líneas, puntos, la frontera de un perceptrón y laberintos |
 
 Los nombres de la biblioteca están en inglés, como Delphi; las lecciones, en el idioma del alumno.
