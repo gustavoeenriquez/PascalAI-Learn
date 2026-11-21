@@ -17,7 +17,7 @@ La especificación está en el repo del motor: `docs/spec/10-ensenanza.md` (deci
 | Carpeta | Qué hay |
 |---|---|
 | `src/` | La biblioteca `Pai.Learn`, escrita en PascalAI para que se pueda leer y depurar |
-| `cursos/colegio/`, `cursos/universidad/` | Las lecciones: `LEEME.md`, `inicio.pas` (con huecos) y `pruebas.pas` (en preparación) |
+| `cursos/colegio/`, `cursos/universidad/` | Las lecciones: `LEEME.md`, `inicio.pas` (con huecos) y `pruebas.pas` (colegio 01-05 y universidad 01-04) |
 | `datos/` | Los datos que no caben en el código, y `DATOS.md` con el origen y la licencia de cada uno |
 | `tests/` | Las pruebas de la biblioteca (`pai test`) |
 | `tools/` | `test.sh` |
@@ -34,6 +34,7 @@ Las soluciones y las rúbricas están en un repositorio privado para docentes.
 | `Pai.Learn.Search` | Laberintos (`TMaze`), búsqueda en anchura y A* |
 | `Pai.Learn.Neighbors` | k vecinos más cercanos |
 | `Pai.Learn.Data` | Conjuntos de datos pequeños (`Datasets.Fruits`, `XorTable`) |
+| `Pai.Learn.Plot` | Gráficos en SVG: líneas, puntos, la frontera de un perceptrón y laberintos |
 
 Los nombres de la biblioteca están en inglés, como Delphi; las lecciones, en el idioma del alumno.
 
