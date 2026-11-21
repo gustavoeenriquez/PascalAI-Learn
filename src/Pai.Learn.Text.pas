@@ -133,33 +133,26 @@ end;
 
 class function Tokenize.Words(const S: string): TArray<string>;
 begin
-  // en una lista (agregar a un arreglo uno por uno lo copia entero cada vez)
-  var L := TList<string>.Create;
-  try
-    var Start := -1;
-    for var I := 1 to Length(S) + 1 do
+  Result := [];
+  var Cur := '';
+  for var I := 1 to Length(S) do
+  begin
+    var C := S[I];
+    if IsWordChar(C) then
+      Cur := Cur + C
+    else
     begin
-      var C := if I <= Length(S) then S[I] else ' ';
-      if IsWordChar(C) then
+      if Cur <> '' then
       begin
-        if Start < 0 then
-          Start := I;
-      end
-      else
-      begin
-        if Start >= 0 then
-        begin
-          L.Add(Copy(S, Start, I - Start).ToLower);
-          Start := -1;
-        end;
-        if (I <= Length(S)) and not C.IsWhiteSpace then
-          L.Add(string(C));
+        Result := Result + [Cur.ToLower];
+        Cur := '';
       end;
+      if not C.IsWhiteSpace then
+        Result := Result + [string(C)];
     end;
-    Result := L.ToArray;
-  finally
-    L.Free;
   end;
+  if Cur <> '' then
+    Result := Result + [Cur.ToLower];
 end;
 
 class function Tokenize.Join(const Tokens: TArray<string>): string;

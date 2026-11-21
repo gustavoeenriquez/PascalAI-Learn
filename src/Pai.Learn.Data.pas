@@ -182,12 +182,7 @@ class function Datasets.DataDir: string;
 begin
   Result := GetEnvironmentVariable('PAI_LEARN');
   if Result = '' then
-  begin
-    var Home := GetEnvironmentVariable('HOME');
-    if Home = '' then
-      Home := GetEnvironmentVariable('USERPROFILE');
-    Result := TPath.Combine(TPath.Combine(Home, '.pai'), 'learn');
-  end;
+    Result := TPath.Combine(TPath.Combine(TPath.GetHomePath, '.pai'), 'learn');
   Result := TPath.Combine(Result, 'datos');
   if not TDirectory.Exists(Result) then
     raise EFileNotFoundException.Create('no encuentro la carpeta datos/ de los cursos: ponga PAI_LEARN=<carpeta de PascalAI-Learn>');

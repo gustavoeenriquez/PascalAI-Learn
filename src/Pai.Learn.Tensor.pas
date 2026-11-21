@@ -195,8 +195,8 @@ begin
   Result.Data := Copy(Node.Data);
 end;
 
-// Los bucles van en procedimientos aparte, sin métodos anónimos: las variables que captura un
-// método anónimo viven en un entorno y leerlas dentro de un bucle es más lento.
+// Los bucles van en procedimientos aparte: se leen solos (la cuenta de cada operación, hacia adelante y
+// hacia atrás) y el método anónimo de cada operación solo dice qué procedimiento llamar.
 
 /// C (N x M) := A (N x K) · B (K x M)
 procedure MatMulForward(const A, B: TArray<Double>; var C: TArray<Double>; N, K, M: Integer);
