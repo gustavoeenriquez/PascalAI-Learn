@@ -1,0 +1,8 @@
+[package]
+name = learn
+version = 0.1.0
+type = pai
+description = Pai.Learn: fundamentos de IA para enseñar (azar con semilla, vectores y matrices, gradiente automático, búsqueda, vecinos) y los cursos de pai learn
+author = pascalai
+license = MIT
+tags = ia,educacion,enseñanza,aprendizaje,learn
