@@ -24,6 +24,7 @@ compares the groups with the real species.
 ## Think about it
 
 - Do the groups match the species? Which one gets mixed with which?
-- Run it with another seed. Does it always find the same groups?
+- Change the initial centers (`[0, 50, 100]` in the program) to other rows. Does it always find the same
+  groups?
 - How would you choose K if you didn't know how many species there are? (try K from 1 to 8 and look at
   the inertia)

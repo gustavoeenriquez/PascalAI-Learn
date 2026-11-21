@@ -26,6 +26,6 @@ training accuracy and the test accuracy. Look at `sobreajuste.svg`.
 ## Think about it
 
 - In which epoch does the training curve start to pull away from the test curve?
-- Which digits does the model confuse most? Does it make sense (a 3 with an 8, a 1 with a 7)?
+- Which digits does the model confuse most? Look at the 8 x 8 images: do they look alike?
 - If you choose the best epoch by looking at the **test** data, is the final measurement still honest?
   (that's why a third group is used: **validation**)

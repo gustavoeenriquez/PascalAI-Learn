@@ -31,5 +31,5 @@ the data. That way the network learns much faster.
 - Change the rate from 0.2 to 0.5 and watch the loss epoch by epoch. It gets almost to zero… and
   suddenly blows up. Why does a step that's too big make the network "jump" over the minimum?
 - Change `Tanh` to `Relu`. Does it learn faster or slower?
-- `Pai.Learn.NN` includes `TMLP` and `TAdam`: compare your network with them in `digitos.pas` in the
-  course folder.
+- `Pai.Learn.NN` includes `TMLP` and `TAdam`: write the same network with `TMLP.Create([64, 16, 10], Azar)`
+  and `TAdam.Create(Red.Parameters, 0.01)`, train it with `CrossEntropy` and compare how accurate it is.

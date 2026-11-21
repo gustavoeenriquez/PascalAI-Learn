@@ -26,6 +26,6 @@ exatidão de treinamento e a de teste. Veja `sobreajuste.svg`.
 ## Para pensar
 
 - Em que época a curva de treinamento começa a se separar da de teste?
-- Quais dígitos o modelo mais confunde? Faz sentido (um 3 com um 8, um 1 com um 7)?
+- Quais dígitos o modelo mais confunde? Olhe as imagens de 8 x 8: elas se parecem?
 - Se você escolhe a melhor época olhando os dados de **teste**, a medida final continua sendo honesta?
   (por isso se usa um terceiro grupo: **validação**)

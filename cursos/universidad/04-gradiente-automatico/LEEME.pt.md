@@ -23,7 +23,7 @@ A ideia:
 1. O passo para trás do produto (`Mul`) e de `Tanh`.
 2. `Backward`: a ordem topológica (com `Visitar`, recursivo) e o percurso ao contrário.
 
-Os testes comparam os seus gradientes com os da biblioteca e com a inclinação medida.
+Os testes comparam os seus gradientes com os calculados à mão para cada operação e para o exemplo.
 
 ## Para pensar
 

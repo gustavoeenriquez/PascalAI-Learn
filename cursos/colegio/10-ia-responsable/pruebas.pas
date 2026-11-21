@@ -12,8 +12,8 @@ begin
   Assert.Equal(0.0, AciertoDe('pear', Datos, Prueba), 'con 3 manzanas y 2 peras votando, ninguna pera se reconoce');
 end;
 
-/// Balancear
-[Hint('Primero cuenta cuántas hay de cada clase; N es la menor. Después recorre Datos y toma una fruta si de su clase llevas menos de N.')]
+/// Balancear con copias de las peras
+[Hint('Cuenta manzanas (M) y peras (P). Después recorre Datos una y otra vez y agrega cada pera que encuentres, hasta haber agregado M - P.')]
 procedure TestBalancear;
 begin
   var B := Balancear(Desbalanceado);
@@ -21,15 +21,15 @@ begin
   var P := 0;
   for var F in B do
     if F.Name = 'apple' then Inc(M) else Inc(P);
-  Assert.Equal(4, M, 'tantas manzanas como peras');
-  Assert.Equal(4, P);
+  Assert.Equal(20, M, 'las 20 manzanas siguen');
+  Assert.Equal(20, P, 'las 4 peras, repetidas, hasta ser 20');
+  Assert.Equal(24 + 16, Length(B));
 end;
 
 /// El modelo balanceado es más justo con las peras
 procedure TestMasJusto;
 begin
-  var Prueba := Datasets.Fruits;
   var D := Desbalanceado;
-  Assert.True(AciertoDe('pear', Balancear(D), Prueba) > AciertoDe('pear', D, Prueba),
-    'balanceado reconoce más peras');
+  Assert.Equal(0.0, AciertoDe('pear', D, Clientes), 'con 4 peras entre 24 frutas y k = 9, ninguna pera gana una votación');
+  Assert.True(AciertoDe('pear', Balancear(D), Clientes) > 0.5, 'balanceado reconoce las peras');
 end;

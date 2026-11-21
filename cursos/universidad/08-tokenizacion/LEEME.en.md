@@ -28,6 +28,6 @@ The program learns 30 merges from one story and then compares the perplexity of 
 - Which merges does it learn first? Why do so many start with a space?
 - With these stories, unigrams give lower perplexity than bigrams, and bigrams lower than trigrams:
   looking further back makes it worse! Why? (hint: with 19,000 words, how many word triples from the new
-  story did the model ever see? When it saw nothing, smoothing spreads the probability across the 2,800
+  story did the model ever see? When it saw nothing, smoothing spreads the probability across the 2,600
   words in the vocabulary.) Large models solve this with vastly more text and with embeddings: similar
   words help each other.

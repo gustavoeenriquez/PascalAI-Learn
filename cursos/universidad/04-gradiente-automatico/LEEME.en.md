@@ -23,7 +23,7 @@ The idea:
 1. The backward step of the product (`Mul`) and of `Tanh`.
 2. `Backward`: the topological order (with `Visitar` (visit), recursive) and the reverse walk.
 
-The tests compare your gradients with the library's and with the measured slope.
+The tests compare your gradients with the ones worked out by hand for each operation and for the example.
 
 ## Think about it
 

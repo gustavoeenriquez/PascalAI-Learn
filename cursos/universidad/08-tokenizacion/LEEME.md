@@ -29,5 +29,5 @@ El programa aprende 30 uniones con un cuento y después compara la perplejidad d
 - Con estos cuentos, los unigramas dan menos perplejidad que los bigramas, y los bigramas menos que los
   trigramas: ¡mirar más atrás empeora! ¿Por qué? (pista: con 19.000 palabras, ¿cuántos tríos de palabras
   del cuento nuevo vio el modelo alguna vez? Cuando no vio nada, el suavizado reparte la probabilidad entre
-  las 2.800 palabras del vocabulario.) Los modelos grandes resuelven esto con muchísimo más texto y con
+  las 2.600 palabras del vocabulario.) Los modelos grandes resuelven esto con muchísimo más texto y con
   embeddings: palabras parecidas se ayudan entre sí.

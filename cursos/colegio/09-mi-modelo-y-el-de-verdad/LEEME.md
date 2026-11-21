@@ -8,7 +8,9 @@ aprendieron.
 En PascalAI un modelo se declara así, y se le pregunta con `Ask`:
 
 ```pascal
-model Narrador;                         // cuál es, lo dice pai.package
+model Narrador
+  primary 'mock/eco';   // pai.package dice cuál es
+end;
 
 WriteLn(Narrador.Ask('había una vez'));
 ```
@@ -36,7 +38,7 @@ El programa y las pruebas **no cambian** al cambiar de modelo: solo cambia una l
 1. `TBigramas.Create`: entrena un `TNGram` de 2 (bigramas) con los cuentos de Quiroga.
 2. `TBigramas.Next`: devuelve lo que dice el n-grama para ese contexto.
 
-Después corre el programa varias veces.
+Después corre el programa. Da siempre lo mismo, porque el motor le da a tu modelo la misma semilla en cada corrida. Agrega `temperature 0.2` o `temperature 2` al `model` y mira qué cambia.
 
 ## Para pensar
 

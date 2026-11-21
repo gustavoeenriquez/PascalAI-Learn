@@ -8,7 +8,9 @@ In PascalAI a model is declared like this, and you ask it things with `Ask` (`Na
 «había una vez» = "once upon a time"):
 
 ```pascal
-model Narrador;                         // which one it is, pai.package says
+model Narrador
+  primary 'mock/eco';   // pai.package says which one it is
+end;
 
 WriteLn(Narrador.Ask('había una vez'));
 ```
@@ -37,7 +39,7 @@ changes.
 1. `TBigramas.Create`: trains a `TNGram` of 2 (bigrams) with Quiroga's stories.
 2. `TBigramas.Next`: returns what the n-gram says for that context.
 
-Then run the program several times.
+Then run the program. It always gives the same result, because the engine gives your model the same seed on every run. Add `temperature 0.2` or `temperature 2` to the `model` and see what changes.
 
 ## Think about it
 

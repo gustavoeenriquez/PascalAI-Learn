@@ -23,5 +23,6 @@ grupos com as espécies de verdade.
 ## Para pensar
 
 - Os grupos coincidem com as espécies? Qual se mistura com qual?
-- Rode com outra semente. Ele sempre encontra os mesmos grupos?
+- Troque os centros iniciais (`[0, 50, 100]` no programa) por outras linhas. Ele sempre encontra os mesmos
+  grupos?
 - Como você escolheria K se não soubesse quantas espécies existem? (teste com K de 1 a 8 e olhe a inércia)

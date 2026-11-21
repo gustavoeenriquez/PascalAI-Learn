@@ -28,6 +28,18 @@ begin
   Cerca(1 - Sqr(Y.Valor), A.Grad, 'd(tanh a)/da');
 end;
 
+/// La tangente en medio del grafo
+[Hint('En el paso hacia atrás de Tanh hay que multiplicar por R.Grad: lo que le llega desde arriba no siempre es 1.')]
+procedure TestTanhEnMedio;
+begin
+  // y = 3 · tanh(x)  →  dy/dx = 3 · (1 − tanh² x)
+  var X := Hoja(0.4);
+  var T := Tanh(X);
+  var Y := Mul(Hoja(3), T);
+  Backward(Y);
+  Cerca(3 * (1 - Sqr(T.Valor)), X.Grad, 'd(3 tanh x)/dx');
+end;
+
 /// El ejemplo de la lección, completo
 [Hint('Backward: después de Visitar(Y), Y.Grad := 1 y for I := Orden.Count - 1 downto 0 llama Orden[I].PasoAtras.')]
 procedure TestEjemplo;

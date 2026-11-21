@@ -31,4 +31,5 @@ datos. Así la red aprende mucho más rápido.
 - Cambia la tasa de 0.2 a 0.5 y mira la pérdida época por época. Llega casi a cero… y de repente
   explota. ¿Por qué un paso demasiado grande hace que la red «salte» por encima del mínimo?
 - Cambia `Tanh` por `Relu`. ¿Aprende más rápido o más lento?
-- `Pai.Learn.NN` trae `TMLP` y `TAdam`: compara tu red con ellos en `digitos.pas` de la carpeta del curso.
+- `Pai.Learn.NN` trae `TMLP` y `TAdam`: escribe la misma red con `TMLP.Create([64, 16, 10], Azar)` y
+  `TAdam.Create(Red.Parameters, 0.01)`, entrénala con `CrossEntropy` y compara cuánto acierta.

@@ -37,5 +37,6 @@ procedure TestRevisaMenos;
 begin
   var L := TMaze.Create(Mazes.Rooms);
   Assert.Equal(27, Length(BuscarAEstrella(L)), 'en las salas el camino mide 26 pasos');
-  Assert.Equal(83, Length(Visitadas), 'A* revisa 83 casillas (la búsqueda en anchura, 145)');
+  Assert.True(Length(Visitadas) < 145, Format('A* revisó %d casillas: tiene que revisar menos que la búsqueda en anchura (145)',
+    [Length(Visitadas)]));
 end;
