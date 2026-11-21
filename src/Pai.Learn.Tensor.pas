@@ -189,48 +189,63 @@ begin
   Result.Data := Copy(Node.Data);
 end;
 
-function TTensor.MatMul(const B: TTensor): TTensor;
+// Los bucles van en procedimientos aparte, sin métodos anónimos: las variables que captura un
+// método anónimo viven en un entorno y leerlas dentro de un bucle es más lento.
+
+/// C (N x M) := A (N x K) · B (K x M)
+procedure MatMulForward(const A, B: TArray<Double>; var C: TArray<Double>; N, K, M: Integer);
 begin
-  var NA := Node;
-  var NB := B.Node;
-  if NA.Cols <> NB.Rows then
-    raise EArgumentException.CreateFmt('MatMul: no se puede multiplicar %dx%d por %dx%d', [NA.Rows, NA.Cols, NB.Rows, NB.Cols]);
-  var N := NA.Rows;
-  var K := NA.Cols;
-  var M := NB.Cols;
-  Result := NewTensor(N, M, [NA, NB], 'matmul');
-  var A := NA.Data;
-  var BD := NB.Data;
-  var C := Result.Node.Data;
   // C[i, j] = Σ_k A[i, k] · B[k, j]; el orden i, k, j recorre B y C fila por fila
   for var I := 0 to N - 1 do
     for var KK := 0 to K - 1 do
     begin
       var AIK := A[I * K + KK];
       if AIK <> 0 then
+      begin
+        var RowC := I * M;
+        var RowB := KK * M;
         for var J := 0 to M - 1 do
-          C[I * M + J] := C[I * M + J] + AIK * BD[KK * M + J];
+          C[RowC + J] := C[RowC + J] + AIK * B[RowB + J];
+      end;
     end;
+end;
+
+/// GA += G · Bᵀ   y   GB += Aᵀ · G
+procedure MatMulBackward(const A, B, G: TArray<Double>; var GA, GB: TArray<Double>; N, K, M: Integer);
+begin
+  for var I := 0 to N - 1 do
+    for var KK := 0 to K - 1 do
+    begin
+      var RowG := I * M;
+      var RowB := KK * M;
+      var AIK := A[I * K + KK];
+      var S := 0.0;
+      for var J := 0 to M - 1 do
+      begin
+        var GIJ := G[RowG + J];
+        S := S + GIJ * B[RowB + J];
+        GB[RowB + J] := GB[RowB + J] + AIK * GIJ;
+      end;
+      GA[I * K + KK] := GA[I * K + KK] + S;
+    end;
+end;
+
+function TTensor.MatMul(const B: TTensor): TTensor;
+begin
+  var NA := Node;
+  var NB := B.Node;
+  if NA.Cols <> NB.Rows then
+    raise EArgumentException.CreateFmt('MatMul: no se puede multiplicar %dx%d por %dx%d', [NA.Rows, NA.Cols, NB.Rows, NB.Cols]);
+  Result := NewTensor(NA.Rows, NB.Cols, [NA, NB], 'matmul');
+  var C := Result.Node.Data;
+  MatMulForward(NA.Data, NB.Data, C, NA.Rows, NA.Cols, NB.Cols);
   Result.Node.Data := C;
   // hacia atrás: dA = dC · Bᵀ   y   dB = Aᵀ · dC
   Result.Node.BackStep := procedure(R: TTensorNode)
     begin
-      var G := R.Grad;
       var GA := NA.Grad;
       var GB := NB.Grad;
-      var AD := NA.Data;
-      var BDD := NB.Data;
-      for var I := 0 to N - 1 do
-        for var J := 0 to M - 1 do
-        begin
-          var GIJ := G[I * M + J];
-          if GIJ <> 0 then
-            for var KK := 0 to K - 1 do
-            begin
-              GA[I * K + KK] := GA[I * K + KK] + GIJ * BDD[KK * M + J];
-              GB[KK * M + J] := GB[KK * M + J] + AD[I * K + KK] * GIJ;
-            end;
-        end;
+      MatMulBackward(NA.Data, NB.Data, R.Grad, GA, GB, NA.Rows, NA.Cols, NB.Cols);
       NA.Grad := GA;
       NB.Grad := GB;
     end;
