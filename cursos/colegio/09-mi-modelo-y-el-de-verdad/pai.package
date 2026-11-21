@@ -5,3 +5,8 @@ version = 0.1.0
 [models]
 Narrador = pascal/TBigramas      ; el tuyo, escrito en Pascal
 ; Narrador = ollama/llama3.2     ; uno de verdad (si tienes Ollama instalado)
+
+[classroom]
+sandbox = standard
+network = local       ; tu modelo, mock/ u ollama/ en esta máquina
+budget = 0
