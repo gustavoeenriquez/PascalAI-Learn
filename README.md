@@ -16,7 +16,7 @@ Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG
 
 ## Instalar
 
-**Lo más fácil (Windows de 64 bits):** descarga `pascalai-ide-0.1.2-win64.zip` de la página de
+**Lo más fácil (Windows de 64 bits):** descarga `pascalai-ide-0.1.3-win64.zip` de la página de
 [descargas](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest), descomprímelo y abre `PaiIde.exe`
 (trae `pai`, no hace falta instalar nada). En Archivo → Abrir lección… (o «Aprender IA» en la pantalla de inicio)
 eliges una lección; si no tienes los cursos, «Descargar los cursos» los baja. Completa `inicio.pas` y comprueba con

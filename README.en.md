@@ -18,7 +18,7 @@ tests).
 
 ## Install
 
-**The easiest way (64-bit Windows):** download `pascalai-ide-0.1.2-win64.zip` from the
+**The easiest way (64-bit Windows):** download `pascalai-ide-0.1.3-win64.zip` from the
 [downloads](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest) page, unzip it and open
 `PaiIde.exe` (it includes `pai`, nothing to install). Switch the interface to English in View → Language. In
 File → Open lesson... (or "Learn AI" on the start screen) pick a lesson; if you don't have the courses,
