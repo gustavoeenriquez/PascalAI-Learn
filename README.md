@@ -16,7 +16,8 @@ Las lecciones están en español, inglés y portugués (`PAI_LANG=en`, `PAI_LANG
 
 1. Descarga `pai` (0.1.1 o posterior) para tu sistema desde la página de
    [descargas](https://github.com/gustavoeenriquez/PascalAI-Learn/releases/latest) (Windows de 64 bits o Linux de
-   64 bits) y descomprímelo en una carpeta que esté en el `PATH`.
+   64 bits) y descomprímelo en una carpeta que esté en el `PATH`. Para Windows on ARM hay una versión
+   **sin probar** (`winarm64`); si falla, la de Windows de 64 bits también corre ahí, por emulación.
 2. Descarga estos cursos (`git clone https://github.com/gustavoeenriquez/PascalAI-Learn` o el .zip del
    repositorio) y apunta `PAI_LEARN` a esa carpeta:
 
