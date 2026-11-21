@@ -77,3 +77,7 @@ PAI=/ruta/a/pai ./tools/test.sh
 ## Licencia
 
 El código, MIT (`LICENSE`). Los textos, las figuras y los datos propios, CC BY 4.0 (`LICENSE-CONTENT.md`).
+
+El motor `pai` de las descargas no es parte de este repositorio: se puede usar gratis con fines educativos y
+personales (su `LICENCIA.txt`). En Windows todavía no tiene firma de código, así que la primera vez SmartScreen
+puede avisar; el `LEEME.txt` de la descarga explica cómo verificar la suma SHA-256 y ejecutarlo.
