@@ -33,6 +33,8 @@ type
     /// Aprende con Epochs pasadas sobre Tokens (solo las palabras que aparecen al menos MinCount veces).
     procedure Train(const Tokens: TArray<string>; Rng: TRandom; Epochs: Integer = 3);
     function Has(const Word: string): Boolean;
+    /// La palabra número I del vocabulario (0 a VocabSize - 1).
+    function Word(I: Integer): string;
     /// El vector de una palabra.
     function Vector(const Word: string): TArray<Double>;
     /// Similitud coseno: 1 = misma dirección, 0 = nada que ver.
@@ -186,6 +188,11 @@ end;
 function TWordEmbedding.Has(const Word: string): Boolean;
 begin
   Result := (FVocab <> nil) and (FVocab.Id(Word.ToLower) >= 0);
+end;
+
+function TWordEmbedding.Word(I: Integer): string;
+begin
+  Result := FVocab.Token(I);
 end;
 
 function TWordEmbedding.Vector(const Word: string): TArray<Double>;

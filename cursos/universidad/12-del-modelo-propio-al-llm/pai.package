@@ -1,0 +1,8 @@
+[package]
+name = narrador
+version = 0.1.0
+
+[models]
+Narrador = pascal/TTrigramas
+; Narrador = pascal/TBigramas
+; Narrador = ollama/llama3.2
