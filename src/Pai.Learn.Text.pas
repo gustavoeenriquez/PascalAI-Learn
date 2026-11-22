@@ -101,11 +101,29 @@ type
     function VocabSize: Integer;
   end;
 
+type
+  /// Una generación en curso (LMStart): el contexto, lo generado y el azar.
+  TLMRun = class
+  public
+    Model: ILanguageModel;
+    Context: TArray<string>;
+    Generated: TList<string>;
+    Rng: TRandom;
+    Temperature: Double;
+    destructor Destroy; override;
+  end;
+
 /// Genera texto con un modelo propio: parte el prompt en tokens, pide el siguiente una y otra vez
 /// (hasta MaxTokens o el fin) y une lo generado. Es lo que hace el motor con M.Ask cuando el modelo
 /// es 'pascal/<Clase>'.
 function LMGenerate(M: ILanguageModel; const Prompt: string; MaxTokens: Integer; Temperature: Double;
   Seed: Integer): string;
+/// LMGenerate de a un token (lo usa el motor para M.Stream con 'pascal/<Clase>', token a token): LMStart prepara,
+/// cada LMStep agrega un token (False = el modelo terminó), LMText da lo generado ya unido y LMEnd libera.
+function LMStart(M: ILanguageModel; const Prompt: string; Temperature: Double; Seed: Integer): TLMRun;
+function LMStep(Run: TLMRun): Boolean;
+function LMText(Run: TLMRun): string;
+procedure LMEnd(Run: TLMRun);
 /// Cuántos tokens tiene Text según el tokenizador del modelo (para contar como con un modelo real).
 function LMCountTokens(M: ILanguageModel; const Text: string): Integer;
 
@@ -531,28 +549,58 @@ begin
     Result := Tokenize.Words(Text);
 end;
 
+destructor TLMRun.Destroy;
+begin
+  Generated.Free;
+  Rng.Free;
+  inherited;
+end;
+
+function LMStart(M: ILanguageModel; const Prompt: string; Temperature: Double; Seed: Integer): TLMRun;
+begin
+  Result := TLMRun.Create;
+  Result.Model := M;
+  Result.Context := LMTokens(M, Prompt);
+  Result.Generated := TList<string>.Create;
+  Result.Rng := TRandom.Create(Seed);
+  Result.Temperature := Temperature;
+end;
+
+function LMStep(Run: TLMRun): Boolean;
+begin
+  var T := Sample(Run.Model.Next(Run.Context), Run.Rng, Run.Temperature);
+  Result := T <> '';
+  if Result then
+  begin
+    Run.Generated.Add(T);
+    Run.Context := Run.Context + [T];
+  end;
+end;
+
+function LMText(Run: TLMRun): string;
+begin
+  if Run.Model is ITokenizer then
+    Result := (Run.Model as ITokenizer).Detokenize(Run.Generated.ToArray)
+  else
+    Result := Tokenize.Join(Run.Generated.ToArray);
+end;
+
+procedure LMEnd(Run: TLMRun);
+begin
+  Run.Free;
+end;
+
 function LMGenerate(M: ILanguageModel; const Prompt: string; MaxTokens: Integer; Temperature: Double;
   Seed: Integer): string;
 begin
-  var Rng := TRandom.Create(Seed);
-  var Context := LMTokens(M, Prompt);
-  var Generated := TList<string>.Create;
+  var Run := LMStart(M, Prompt, Temperature, Seed);
   try
     for var I := 1 to MaxTokens do
-    begin
-      var T := Sample(M.Next(Context), Rng, Temperature);
-      if T = '' then
+      if not LMStep(Run) then
         Break;
-      Generated.Add(T);
-      Context := Context + [T];
-    end;
-    if M is ITokenizer then
-      Result := (M as ITokenizer).Detokenize(Generated.ToArray)
-    else
-      Result := Tokenize.Join(Generated.ToArray);
+    Result := LMText(Run);
   finally
-    Generated.Free;
-    Rng.Free;
+    LMEnd(Run);
   end;
 end;
 

@@ -2,6 +2,19 @@
 uses SysUtils, Math, Pai.Learn.Random, Pai.Learn.Data, Pai.Learn.Tensor, Pai.Learn.NN, Pai.Learn.Text,
   Pai.Learn.Embed, Pai.Learn.Attention, Pai.Learn.RL;
 
+type
+  /// Un n-grama como modelo de lenguaje (lo que hace el alumno para usarlo con 'pascal/<Clase>').
+  TModeloNGram = class(TInterfacedObject, ILanguageModel)
+  public
+    G: TNGram;
+    function Next(const Context: TArray<string>): TArray<TTokenProb>;
+  end;
+
+function TModeloNGram.Next(const Context: TArray<string>): TArray<TTokenProb>;
+begin
+  Result := G.Next(Context);
+end;
+
 procedure TestTokenizar;
 begin
   Assert.Equal('había|una|vez|,|¡|hola|!', string.Join('|', Tokenize.Words('Había una vez, ¡HOLA!')));
@@ -29,6 +42,29 @@ begin
   var Texto := Tokenize.Words('había una vez un hombre que vivía en el monte');
   Assert.True(T.Perplexity(Texto) > 0);
   Assert.True(B.Perplexity(Texto) > 0);
+end;
+
+procedure TestGenerarDeAUno;
+// LMStart/LMStep/LMText (Stream token a token en el motor) dan el mismo texto que LMGenerate con la misma semilla
+begin
+  var Mo := TModeloNGram.Create;
+  Mo.G := TNGram.Create(2);
+  Mo.G.Train(Tokenize.Words(Datasets.Text('cuentos')));
+  var M: ILanguageModel := Mo;
+  var Todo := LMGenerate(M, 'había una vez', 12, 1.0, 7);
+  var Run := LMStart(M, 'había una vez', 1.0, 7);
+  var Pasos := 0;
+  var Unido := '';
+  while (Pasos < 12) and LMStep(Run) do
+  begin
+    Inc(Pasos);
+    var T := LMText(Run);
+    Assert.True(T.StartsWith(Unido), 'cada paso solo agrega');
+    Unido := T;
+  end;
+  LMEnd(Run);
+  Assert.Equal(Todo, Unido);
+  Assert.True(Pasos > 0);
 end;
 
 procedure TestBpe;
