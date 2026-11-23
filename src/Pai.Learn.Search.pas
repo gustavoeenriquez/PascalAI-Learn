@@ -64,6 +64,40 @@ function BreadthFirst(Maze: TMaze): TSearchResult;
 /// camino más corto, y en espacios abiertos revisa muchas menos casillas.
 function AStar(Maze: TMaze): TSearchResult;
 
+/// Búsqueda en profundidad: sigue un pasillo hasta el fondo antes de volver atrás a probar otro.
+/// Encuentra un camino (si lo hay), pero no siempre el más corto; usa poca memoria.
+function DepthFirst(Maze: TMaze): TSearchResult;
+
+type
+  /// El tres en raya, para la búsqueda adversaria: 9 casillas (0..8, por filas) con 'X', 'O' o ' '.
+  /// Juega X primero.
+  TTicTacToe = record
+    Cells: string;               // 9 caracteres
+    class function Empty: TTicTacToe; static;
+    class function FromText(const S: string): TTicTacToe; static;
+    /// A quién le toca: 'X' si hay tantas X como O; si no, 'O'.
+    function Turn: Char;
+    /// 'X' u 'O' si alguien hizo tres en línea; ' ' si no.
+    function Winner: Char;
+    function Full: Boolean;
+    /// Las casillas libres (si el juego no terminó).
+    function Moves: TArray<Integer>;
+    /// El tablero después de jugar en la casilla Cell quien tiene el turno.
+    function Play(Cell: Integer): TTicTacToe;
+    function ToString: string;
+  end;
+
+  TMinimaxResult = record
+    Move: Integer;               // la mejor jugada para quien tiene el turno (-1 si el juego terminó)
+    Value: Integer;              // +1 gana X, -1 gana O, 0 empate (con juego perfecto de los dos)
+    Nodes: Integer;              // cuántos tableros revisó
+  end;
+
+/// Minimax: X busca el mayor valor y O el menor, suponiendo que el otro juega lo mejor posible. Con
+/// Prune, la poda alfa-beta deja de revisar las jugadas que ya no pueden cambiar la decisión: el mismo
+/// resultado revisando muchos menos tableros (compare Nodes).
+function Minimax(const Board: TTicTacToe; Prune: Boolean = True): TMinimaxResult;
+
 implementation
 
 constructor TCell.Create(ARow, ACol: Integer);
@@ -213,6 +247,172 @@ begin
   finally
     Queue.Free;
     CameFrom.Free;
+  end;
+end;
+
+function DepthFirst(Maze: TMaze): TSearchResult;
+begin
+  Result.Path := [];
+  Result.Visited := [];
+  var Stack := TStack<TCell>.Create;
+  var CameFrom := TDictionary<TCell, TCell>.Create;
+  var Seen := TDictionary<TCell, Boolean>.Create;
+  try
+    Stack.Push(Maze.Start);
+    CameFrom.Add(Maze.Start, Maze.Start);
+    while Stack.Count > 0 do
+    begin
+      var Current := Stack.Pop;
+      if Seen.ContainsKey(Current) then
+        Continue;
+      Seen.Add(Current, True);
+      Result.Visited := Result.Visited + [Current];
+      if Current = Maze.Goal then
+      begin
+        Result.Path := Maze.PathFrom(CameFrom, Current);
+        Exit;
+      end;
+      for var N in Maze.Neighbors(Current) do
+        if not Seen.ContainsKey(N) then
+        begin
+          CameFrom.AddOrSetValue(N, Current);
+          Stack.Push(N);
+        end;
+    end;
+  finally
+    Stack.Free;
+    CameFrom.Free;
+    Seen.Free;
+  end;
+end;
+
+// ------------------------------------------------------------------ tres en raya y minimax
+
+class function TTicTacToe.Empty: TTicTacToe;
+begin
+  Result.Cells := '         ';
+end;
+
+class function TTicTacToe.FromText(const S: string): TTicTacToe;
+begin
+  if Length(S) <> 9 then
+    raise EArgumentException.Create('el tablero son 9 caracteres (X, O o espacio), por filas');
+  Result.Cells := S.ToUpper;
+end;
+
+function TTicTacToe.Turn: Char;
+begin
+  var NX := 0;
+  var NO := 0;
+  for var C in Cells do
+    if C = 'X' then Inc(NX) else if C = 'O' then Inc(NO);
+  if NX = NO then Result := 'X' else Result := 'O';
+end;
+
+function TTicTacToe.Winner: Char;
+const
+  LINES: array[0..7, 0..2] of Integer = ((0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8),
+    (0, 4, 8), (2, 4, 6));
+begin
+  for var L := 0 to 7 do
+  begin
+    var A := Cells[LINES[L, 0] + 1];
+    if (A <> ' ') and (Cells[LINES[L, 1] + 1] = A) and (Cells[LINES[L, 2] + 1] = A) then
+      Exit(A);
+  end;
+  Result := ' ';
+end;
+
+function TTicTacToe.Full: Boolean;
+begin
+  Result := not Cells.Contains(' ');
+end;
+
+function TTicTacToe.Moves: TArray<Integer>;
+begin
+  Result := [];
+  if Winner <> ' ' then
+    Exit;
+  for var I := 0 to 8 do
+    if Cells[I + 1] = ' ' then
+      Result := Result + [I];
+end;
+
+function TTicTacToe.Play(Cell: Integer): TTicTacToe;
+begin
+  if (Cell < 0) or (Cell > 8) or (Cells[Cell + 1] <> ' ') then
+    raise EArgumentException.CreateFmt('la casilla %d no está libre', [Cell]);
+  Result.Cells := Cells;
+  Result.Cells[Cell + 1] := Turn;
+end;
+
+function TTicTacToe.ToString: string;
+begin
+  Result := '';
+  for var R := 0 to 2 do
+  begin
+    for var C := 0 to 2 do
+    begin
+      var X := Cells[R * 3 + C + 1];
+      if X = ' ' then X := '.';
+      Result := Result + X;
+    end;
+    if R < 2 then
+      Result := Result + sLineBreak;
+  end;
+end;
+
+function MinimaxValue(const B: TTicTacToe; Alpha, Beta: Integer; Prune: Boolean; var Nodes: Integer): Integer;
+begin
+  Inc(Nodes);
+  var W := B.Winner;
+  if W = 'X' then Exit(1);
+  if W = 'O' then Exit(-1);
+  if B.Full then Exit(0);
+  var Maximizing := B.Turn = 'X';
+  if Maximizing then Result := -2 else Result := 2;
+  for var M in B.Moves do
+  begin
+    var V := MinimaxValue(B.Play(M), Alpha, Beta, Prune, Nodes);
+    if Maximizing then
+    begin
+      if V > Result then Result := V;
+      if Result > Alpha then Alpha := Result;
+    end
+    else
+    begin
+      if V < Result then Result := V;
+      if Result < Beta then Beta := Result;
+    end;
+    if Prune and (Alpha >= Beta) then
+      Break;                     // el otro ya tiene algo mejor antes de llegar aquí: no hace falta seguir
+  end;
+end;
+
+function Minimax(const Board: TTicTacToe; Prune: Boolean): TMinimaxResult;
+begin
+  Result.Move := -1;
+  Result.Nodes := 1;
+  var Maximizing := Board.Turn = 'X';
+  if Maximizing then Result.Value := -2 else Result.Value := 2;
+  var Alpha := -2;
+  var Beta := 2;
+  for var M in Board.Moves do
+  begin
+    var V := MinimaxValue(Board.Play(M), Alpha, Beta, Prune, Result.Nodes);
+    if (Maximizing and (V > Result.Value)) or (not Maximizing and (V < Result.Value)) then
+    begin
+      Result.Value := V;
+      Result.Move := M;
+    end;
+    if Maximizing and (Result.Value > Alpha) then Alpha := Result.Value;
+    if not Maximizing and (Result.Value < Beta) then Beta := Result.Value;
+  end;
+  if Result.Move < 0 then
+  begin
+    // el juego ya terminó: su valor
+    var W := Board.Winner;
+    if W = 'X' then Result.Value := 1 else if W = 'O' then Result.Value := -1 else Result.Value := 0;
   end;
 end;
 

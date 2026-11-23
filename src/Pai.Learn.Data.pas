@@ -41,6 +41,9 @@ type
     function Subset(const Indices: TArray<Integer>): TDataset;
     /// Mezcla y separa: TestFraction de los ejemplos van a Test y el resto a Train.
     procedure Split(TestFraction: Double; Rng: TRandom; out Train, Test: TDataset);
+    /// Los ejemplos mezclados, en lotes de Size (el último puede ser más chico): para entrenar de a
+    /// pedazos (descenso del gradiente por lotes) en vez de con todo junto o de a uno.
+    function Batches(Size: Integer; Rng: TRandom): TArray<TDataset>;
   end;
 
   Datasets = class
@@ -63,6 +66,11 @@ type
     class function FruitsTest: TArray<TFruit>; static;
     /// La tabla del O exclusivo: 1 si las entradas son distintas, 0 si son iguales.
     class function XorTable: TArray<TSample>; static;
+    /// Espirales entrelazadas (Lang y Witbrock, 1988): Classes brazos de PerClass puntos (x, y) que
+    /// giran alrededor del centro; una recta no las separa, una red con capas ocultas sí. Generadas
+    /// aquí (siempre iguales para la misma semilla); Noise mueve cada punto un poco al azar.
+    class function Spirals(PerClass: Integer = 100; Classes: Integer = 2; Noise: Double = 0.1;
+      Seed: Integer = 7): TDataset; static;
   end;
 
 implementation
@@ -176,6 +184,60 @@ begin
   var NTest := Round(Count * TestFraction);
   Test := Subset(Copy(Idx, 0, NTest));
   Train := Subset(Copy(Idx, NTest, Count - NTest));
+end;
+
+function TDataset.Batches(Size: Integer; Rng: TRandom): TArray<TDataset>;
+var
+  Idx: TArray<Integer>;
+begin
+  if Size < 1 then
+    raise EArgumentException.Create('Batches: el tamaño del lote es al menos 1');
+  SetLength(Idx, Count);
+  for var I := 0 to High(Idx) do
+    Idx[I] := I;
+  for var I := High(Idx) downto 1 do
+  begin
+    var J := Rng.NextInt(I + 1);
+    var T := Idx[I];
+    Idx[I] := Idx[J];
+    Idx[J] := T;
+  end;
+  Result := [];
+  var From := 0;
+  while From < Count do
+  begin
+    var N := Size;
+    if From + N > Count then
+      N := Count - From;
+    Result := Result + [Subset(Copy(Idx, From, N))];
+    From := From + N;
+  end;
+end;
+
+class function Datasets.Spirals(PerClass, Classes: Integer; Noise: Double; Seed: Integer): TDataset;
+begin
+  var Rng := TRandom.Create(Seed);
+  try
+    Result.X := TMatrix.Create(PerClass * Classes, 2);
+    SetLength(Result.Labels, PerClass * Classes);
+    SetLength(Result.ClassNames, Classes);
+    for var K := 0 to Classes - 1 do
+      Result.ClassNames[K] := 'brazo ' + IntToStr(K);
+    var Row := 0;
+    for var K := 0 to Classes - 1 do
+      for var I := 0 to PerClass - 1 do
+      begin
+        // el radio crece de 0 a 1 mientras el ángulo da casi dos vueltas; cada brazo empieza girado
+        var R := I / PerClass;
+        var A := 4 * Pi * R + K * 2 * Pi / Classes + Rng.Gauss(0, Noise);
+        Result.X[Row, 0] := R * Cos(A);
+        Result.X[Row, 1] := R * Sin(A);
+        Result.Labels[Row] := K;
+        Inc(Row);
+      end;
+  finally
+    Rng.Free;
+  end;
 end;
 
 class function Datasets.DataDir: string;

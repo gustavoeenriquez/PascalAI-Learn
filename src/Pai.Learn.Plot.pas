@@ -1,7 +1,9 @@
 ﻿unit Pai.Learn.Plot;
 
 // Gráficos en SVG, escritos en PascalAI para que se puedan leer: líneas (la pérdida que baja),
-// puntos (los datos de dos clases), una recta de frontera (el perceptrón) y laberintos (la búsqueda).
+// puntos (los datos de dos clases), una recta de frontera (el perceptrón), laberintos (la búsqueda),
+// mapas de calor (pesos, atención, matriz de confusión), árboles (decisión, búsqueda) y cuadrículas
+// (Q-learning); varios juntos en una página HTML con Plot.Html.
 // El archivo .svg se abre en cualquier navegador (y el IDE lo muestra al lado del código).
 //
 //   var G := TPlot.Create('Pérdida por época', 'época', 'pérdida');
@@ -12,7 +14,7 @@
 interface
 
 uses
-  SysUtils, Generics.Collections, Pai.Learn.Search;
+  SysUtils, Generics.Collections, Pai.Learn.Search, Pai.Learn.Linalg;
 
 type
   TPlotKind = (pkLine, pkScatter);
@@ -45,6 +47,37 @@ type
     /// El gráfico como texto SVG.
     function ToSvg: string;
     procedure SaveSvg(const AFileName: string);
+    /// El gráfico en una página HTML (D-381).
+    procedure SaveHtml(const AFileName: string);
+  end;
+
+  /// Un nodo de un árbol para dibujar (Plot.Tree): su texto, sus hijos y el rótulo de cada rama.
+  /// Libera a sus hijos.
+  TPlotNode = class
+  public
+    Text: string;
+    Children: TArray<TPlotNode>;
+    EdgeLabels: TArray<string>;
+    constructor Create(const AText: string = '');
+    destructor Destroy; override;
+    function Add(const AText: string; const AEdge: string = ''): TPlotNode;
+  end;
+
+  /// Los gráficos que no son series (D-381): cada uno devuelve el texto SVG.
+  Plot = class
+  public
+    /// Un mapa de calor: cada casilla de M con un color según su valor (azul los menores, naranja los
+    /// mayores) y el número escrito si ShowValues. RowNames/ColNames rotulan filas y columnas (opcionales).
+    class function Heatmap(const M: TMatrix; const Title: string = ''; const RowNames: TArray<string> = nil;
+      const ColNames: TArray<string> = nil; ShowValues: Boolean = True): string; static;
+    /// Un árbol: la raíz arriba y los hijos debajo (un árbol de decisión, el de una búsqueda).
+    class function Tree(Root: TPlotNode; const Title: string = ''): string; static;
+    /// Una cuadrícula de valores (Q-learning: el valor de cada casilla), con flechas opcionales
+    /// ('^', 'v', '<', '>' o ' ' por casilla, fila por fila) y casillas tapadas en Walls ('#').
+    class function Grid(const Values: TMatrix; const Arrows: TArray<string> = nil;
+      const Walls: TArray<string> = nil; const Title: string = ''): string; static;
+    /// Una página HTML con estos SVG uno debajo del otro (se abre en el navegador; el IDE la muestra).
+    class function Html(const Title: string; const Svgs: TArray<string>): string; static;
   end;
 
 /// Un laberinto en SVG: paredes, casillas revisadas (más oscuras las más tardías) y el camino.
@@ -315,6 +348,270 @@ begin
   finally
     Order.Free;
     OnPath.Free;
+    SB.Free;
+  end;
+end;
+
+
+// ------------------------------------------------------------------ árboles, mapas de calor y cuadrículas (D-381)
+
+constructor TPlotNode.Create(const AText: string);
+begin
+  inherited Create;
+  Text := AText;
+end;
+
+destructor TPlotNode.Destroy;
+begin
+  for var C in Children do
+    C.Free;
+  inherited;
+end;
+
+function TPlotNode.Add(const AText, AEdge: string): TPlotNode;
+begin
+  Result := TPlotNode.Create(AText);
+  Children := Children + [Result];
+  EdgeLabels := EdgeLabels + [AEdge];
+end;
+
+procedure TPlot.SaveHtml(const AFileName: string);
+begin
+  SaveText(AFileName, Plot.Html(FTitle, [ToSvg]));
+end;
+
+/// Un color de azul (0) a naranja (1), pasando por blanco
+function HeatColor(T: Double): string;
+
+  function Mix(A, B: Integer; F: Double): Integer;
+  begin
+    Result := Round(A + (B - A) * F);
+  end;
+
+begin
+  if T < 0 then T := 0;
+  if T > 1 then T := 1;
+  var R, G, B: Integer;
+  if T < 0.5 then
+  begin
+    R := Mix(47, 255, T * 2); G := Mix(91, 255, T * 2); B := Mix(211, 255, T * 2);
+  end
+  else
+  begin
+    R := Mix(255, 217, (T - 0.5) * 2); G := Mix(255, 72, (T - 0.5) * 2); B := Mix(255, 15, (T - 0.5) * 2);
+  end;
+  Result := '#' + IntToHex(R, 2) + IntToHex(G, 2) + IntToHex(B, 2);
+end;
+
+class function Plot.Heatmap(const M: TMatrix; const Title: string; const RowNames, ColNames: TArray<string>;
+  ShowValues: Boolean): string;
+const
+  CS = 36;
+begin
+  var Lo := 0.0;
+  var Hi := 0.0;
+  if Length(M.Data) > 0 then
+  begin
+    Lo := M.Data[0];
+    Hi := M.Data[0];
+    for var V in M.Data do
+    begin
+      if V < Lo then Lo := V;
+      if V > Hi then Hi := V;
+    end;
+  end;
+  var LeftM := 10;
+  if Length(RowNames) > 0 then LeftM := 90;
+  var TopM := 10;
+  if Title <> '' then TopM := TopM + 24;
+  if Length(ColNames) > 0 then TopM := TopM + 20;
+  var W := LeftM + M.Cols * CS + 10;
+  var H := TopM + M.Rows * CS + 10;
+  var SB := TStringBuilder.Create;
+  try
+    SB.Append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + IntToStr(W) + ' ' + IntToStr(H) +
+      '" font-family="sans-serif" font-size="11">').Append(sLineBreak);
+    if Title <> '' then
+      SB.Append('<text x="' + IntToStr(W div 2) + '" y="18" text-anchor="middle" font-size="14">' + Esc(Title) +
+        '</text>').Append(sLineBreak);
+    for var C := 0 to High(ColNames) do
+      if C < M.Cols then
+        SB.Append('<text x="' + IntToStr(LeftM + C * CS + CS div 2) + '" y="' + IntToStr(TopM - 6) +
+          '" text-anchor="middle">' + Esc(ColNames[C]) + '</text>');
+    for var R := 0 to M.Rows - 1 do
+    begin
+      if R < Length(RowNames) then
+        SB.Append('<text x="' + IntToStr(LeftM - 6) + '" y="' + IntToStr(TopM + R * CS + CS div 2 + 4) +
+          '" text-anchor="end">' + Esc(RowNames[R]) + '</text>');
+      for var C := 0 to M.Cols - 1 do
+      begin
+        var V := M[R, C];
+        var T := 0.5;
+        if Hi > Lo then T := (V - Lo) / (Hi - Lo);
+        SB.Append('<rect x="' + IntToStr(LeftM + C * CS) + '" y="' + IntToStr(TopM + R * CS) + '" width="' +
+          IntToStr(CS) + '" height="' + IntToStr(CS) + '" fill="' + HeatColor(T) + '" stroke="#ffffff"/>');
+        if ShowValues then
+          SB.Append('<text x="' + IntToStr(LeftM + C * CS + CS div 2) + '" y="' + IntToStr(TopM + R * CS + CS div 2 + 4) +
+            '" text-anchor="middle" fill="#1d1d1f">' + FormatFloat('0.##', V) + '</text>');
+      end;
+      SB.Append(sLineBreak);
+    end;
+    SB.Append('</svg>').Append(sLineBreak);
+    Result := SB.ToString;
+  finally
+    SB.Free;
+  end;
+end;
+
+/// Cuántas hojas tiene el subárbol (el ancho que ocupa)
+function Leaves(N: TPlotNode): Integer;
+begin
+  if Length(N.Children) = 0 then
+    Exit(1);
+  Result := 0;
+  for var C in N.Children do
+    Result := Result + Leaves(C);
+end;
+
+function Depth(N: TPlotNode): Integer;
+begin
+  Result := 1;
+  for var C in N.Children do
+    if Depth(C) + 1 > Result then
+      Result := Depth(C) + 1;
+end;
+
+procedure DrawNode(SB: TStringBuilder; N: TPlotNode; X0, Y, LeafW, LevelH: Integer);
+// X0: el borde izquierdo de su franja; el nodo va al centro de las hojas que le tocan
+begin
+  var W := Leaves(N) * LeafW;
+  var CX := X0 + W div 2;
+  var BoxW := LeafW - 10;
+  var Cursor := X0;
+  for var I := 0 to High(N.Children) do
+  begin
+    var Ch := N.Children[I];
+    var CW := Leaves(Ch) * LeafW;
+    var CCX := Cursor + CW div 2;
+    SB.Append('<line x1="' + IntToStr(CX) + '" y1="' + IntToStr(Y + 30) + '" x2="' + IntToStr(CCX) + '" y2="' +
+      IntToStr(Y + LevelH) + '" stroke="#8a8a8f"/>');
+    if (I < Length(N.EdgeLabels)) and (N.EdgeLabels[I] <> '') then
+      SB.Append('<text x="' + IntToStr((CX + CCX) div 2 + 4) + '" y="' + IntToStr(Y + 30 + (LevelH - 30) div 2) +
+        '" fill="#6b6b70">' + Esc(N.EdgeLabels[I]) + '</text>');
+    DrawNode(SB, Ch, Cursor, Y + LevelH, LeafW, LevelH);
+    Cursor := Cursor + CW;
+  end;
+  var Fill := '#e8eefc';
+  if Length(N.Children) = 0 then Fill := '#fde9dd';
+  SB.Append('<rect x="' + IntToStr(CX - BoxW div 2) + '" y="' + IntToStr(Y) + '" width="' + IntToStr(BoxW) +
+    '" height="30" rx="6" fill="' + Fill + '" stroke="#2f5bd3"/>');
+  SB.Append('<text x="' + IntToStr(CX) + '" y="' + IntToStr(Y + 19) + '" text-anchor="middle">' + Esc(N.Text) +
+    '</text>').Append(sLineBreak);
+end;
+
+class function Plot.Tree(Root: TPlotNode; const Title: string): string;
+const
+  LEAF_W = 120;
+  LEVEL_H = 70;
+begin
+  var TopM := 10;
+  if Title <> '' then TopM := 34;
+  var W := Leaves(Root) * LEAF_W;
+  var H := TopM + Depth(Root) * LEVEL_H;
+  var SB := TStringBuilder.Create;
+  try
+    SB.Append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + IntToStr(W) + ' ' + IntToStr(H) +
+      '" font-family="sans-serif" font-size="11">').Append(sLineBreak);
+    if Title <> '' then
+      SB.Append('<text x="' + IntToStr(W div 2) + '" y="18" text-anchor="middle" font-size="14">' + Esc(Title) +
+        '</text>').Append(sLineBreak);
+    DrawNode(SB, Root, 0, TopM, LEAF_W, LEVEL_H);
+    SB.Append('</svg>').Append(sLineBreak);
+    Result := SB.ToString;
+  finally
+    SB.Free;
+  end;
+end;
+
+class function Plot.Grid(const Values: TMatrix; const Arrows, Walls: TArray<string>; const Title: string): string;
+const
+  CS = 44;
+begin
+  var Lo := 0.0;
+  var Hi := 0.0;
+  var First := True;
+  for var R := 0 to Values.Rows - 1 do
+    for var C := 0 to Values.Cols - 1 do
+    begin
+      if (R < Length(Walls)) and (C < Length(Walls[R])) and (Walls[R][C + 1] = '#') then
+        Continue;
+      var V := Values[R, C];
+      if First or (V < Lo) then Lo := V;
+      if First or (V > Hi) then Hi := V;
+      First := False;
+    end;
+  var TopM := 10;
+  if Title <> '' then TopM := 34;
+  var W := Values.Cols * CS + 20;
+  var H := TopM + Values.Rows * CS + 10;
+  var SB := TStringBuilder.Create;
+  try
+    SB.Append('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + IntToStr(W) + ' ' + IntToStr(H) +
+      '" font-family="sans-serif" font-size="11">').Append(sLineBreak);
+    if Title <> '' then
+      SB.Append('<text x="' + IntToStr(W div 2) + '" y="18" text-anchor="middle" font-size="14">' + Esc(Title) +
+        '</text>').Append(sLineBreak);
+    for var R := 0 to Values.Rows - 1 do
+      for var C := 0 to Values.Cols - 1 do
+      begin
+        var X := 10 + C * CS;
+        var Y := TopM + R * CS;
+        var Pos := 'x="' + IntToStr(X) + '" y="' + IntToStr(Y) + '" width="' + IntToStr(CS) + '" height="' +
+          IntToStr(CS) + '"';
+        if (R < Length(Walls)) and (C < Length(Walls[R])) and (Walls[R][C + 1] = '#') then
+        begin
+          SB.Append('<rect ' + Pos + ' fill="#2a3245"/>');
+          Continue;
+        end;
+        var T := 0.5;
+        if Hi > Lo then T := (Values[R, C] - Lo) / (Hi - Lo);
+        SB.Append('<rect ' + Pos + ' fill="' + HeatColor(T) + '" stroke="#ffffff"/>');
+        SB.Append('<text x="' + IntToStr(X + CS div 2) + '" y="' + IntToStr(Y + CS - 6) +
+          '" text-anchor="middle" fill="#1d1d1f">' + FormatFloat('0.##', Values[R, C]) + '</text>');
+        if (R < Length(Arrows)) and (C < Length(Arrows[R])) and (Arrows[R][C + 1] <> ' ') then
+        begin
+          var A := Arrows[R][C + 1];
+          var Sym := '';
+          if A = '^' then Sym := '↑' else if A = 'v' then Sym := '↓' else if A = '<' then Sym := '←'
+          else if A = '>' then Sym := '→' else Sym := A;
+          SB.Append('<text x="' + IntToStr(X + CS div 2) + '" y="' + IntToStr(Y + 20) +
+            '" text-anchor="middle" font-size="16" fill="#1d1d1f">' + Esc(Sym) + '</text>');
+        end;
+      end;
+    SB.Append('</svg>').Append(sLineBreak);
+    Result := SB.ToString;
+  finally
+    SB.Free;
+  end;
+end;
+
+class function Plot.Html(const Title: string; const Svgs: TArray<string>): string;
+begin
+  var SB := TStringBuilder.Create;
+  try
+    SB.Append('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" ' +
+      'content="width=device-width,initial-scale=1"><title>' + Esc(Title) + '</title><style>' +
+      'body{margin:0;padding:16px;background:#f7f7f5;color:#1d1d1f;font:14px/1.45 system-ui,sans-serif}' +
+      'h1{font-size:18px;margin:0 0 12px}figure{margin:0 0 16px;background:#fff;border:1px solid #e3e3df;' +
+      'border-radius:8px;padding:8px}svg{width:100%;height:auto;max-width:720px;display:block}' +
+      '@media (prefers-color-scheme:dark){body{background:#161618;color:#e8e8ea}figure{background:#fff}}' +
+      '</style></head><body>').Append(sLineBreak);
+    SB.Append('<h1>' + Esc(Title) + '</h1>').Append(sLineBreak);
+    for var S in Svgs do
+      SB.Append('<figure>' + S + '</figure>').Append(sLineBreak);
+    SB.Append('</body></html>').Append(sLineBreak);
+    Result := SB.ToString;
+  finally
     SB.Free;
   end;
 end;
