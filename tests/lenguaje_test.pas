@@ -108,8 +108,8 @@ begin
   var M := TTinyTransformer.Create(4, 8, 8, Azar);
   var Opt := TAdam.Create(M.Parameters, 0.05);
   var Ids: TArray<Integer> := [0, 1, 2, 3, 0, 1, 2, 3, 0];
-  var Primera := 0.0;
-  var Ultima := 0.0;
+  var Primera: Double := 0.0;
+  var Ultima: Double := 0.0;
   for var Paso := 1 to 80 do
   begin
     Opt.ZeroGrad;

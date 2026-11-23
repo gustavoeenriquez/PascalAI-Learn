@@ -30,7 +30,7 @@ begin
   Crear(2, 4, 1, TRandom.Create(2));
   var X := TTensor.FromRows([[0, 0], [0, 1], [1, 0], [1, 1]]);
   var Y := TTensor.FromRows([[0], [1], [1], [0]]);
-  var L := 0.0;
+  var L: Double := 0.0;
   for var E := 1 to 800 do
     L := Paso(X, Y, 0.2);
   Assert.True(L < 0.02, Format('la pérdida quedó en %.4f', [L]));

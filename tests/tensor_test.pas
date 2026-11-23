@@ -98,7 +98,7 @@ begin
   var W2 := TTensor.Random(4, 1, Rng);
   var B2 := TTensor.Zeros(1, 1);
   var Params: TArray<TTensor> := [W1, B1, W2, B2];
-  var Loss := 0.0;
+  var Loss: Double := 0.0;
   for var Epoca := 1 to 500 do
   begin
     for var P in Params do

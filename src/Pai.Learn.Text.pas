@@ -482,7 +482,7 @@ begin
   // con temperatura: p^(1/T), normalizado
   var W: TArray<Double>;
   SetLength(W, Length(Probs));
-  var Total := 0.0;
+  var Total: Double := 0.0;
   for var I := 0 to High(Probs) do
   begin
     W[I] := Power(Probs[I].Prob, 1 / Temperature);
@@ -517,7 +517,7 @@ var
   D: TDictionary<string, Integer>;
 begin
   var V := FVocab.Count + 1;      // +1: un token que nunca vio
-  var LogSum := 0.0;
+  var LogSum: Double := 0.0;
   var N := 0;
   for var I := FN - 1 to High(Tokens) do
   begin

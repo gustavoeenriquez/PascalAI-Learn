@@ -227,7 +227,7 @@ begin
   for var R := 0 to A.Rows - 1 do
     for var C := 0 to B.Cols - 1 do
     begin
-      var S := 0.0;
+      var S: Double := 0.0;
       for var K := 0 to A.Cols - 1 do
         S := S + A[R, K] * B[K, C];
       Result[R, C] := S;

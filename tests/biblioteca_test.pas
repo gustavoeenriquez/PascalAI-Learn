@@ -15,7 +15,7 @@ end;
 procedure TestAzarEnRango;
 begin
   var R := TRandom.Create(3);
-  var Suma := 0.0;
+  var Suma: Double := 0.0;
   for var I := 1 to 10000 do
   begin
     var X := R.NextDouble;

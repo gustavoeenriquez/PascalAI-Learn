@@ -408,8 +408,8 @@ class function Plot.Heatmap(const M: TMatrix; const Title: string; const RowName
 const
   CS = 36;
 begin
-  var Lo := 0.0;
-  var Hi := 0.0;
+  var Lo: Double := 0.0;
+  var Hi: Double := 0.0;
   if Length(M.Data) > 0 then
   begin
     Lo := M.Data[0];
@@ -446,7 +446,7 @@ begin
       for var C := 0 to M.Cols - 1 do
       begin
         var V := M[R, C];
-        var T := 0.5;
+        var T: Double := 0.5;
         if Hi > Lo then T := (V - Lo) / (Hi - Lo);
         SB.Append('<rect x="' + IntToStr(LeftM + C * CS) + '" y="' + IntToStr(TopM + R * CS) + '" width="' +
           IntToStr(CS) + '" height="' + IntToStr(CS) + '" fill="' + HeatColor(T) + '" stroke="#ffffff"/>');
@@ -537,8 +537,8 @@ class function Plot.Grid(const Values: TMatrix; const Arrows, Walls: TArray<stri
 const
   CS = 44;
 begin
-  var Lo := 0.0;
-  var Hi := 0.0;
+  var Lo: Double := 0.0;
+  var Hi: Double := 0.0;
   var First := True;
   for var R := 0 to Values.Rows - 1 do
     for var C := 0 to Values.Cols - 1 do
@@ -573,7 +573,7 @@ begin
           SB.Append('<rect ' + Pos + ' fill="#2a3245"/>');
           Continue;
         end;
-        var T := 0.5;
+        var T: Double := 0.5;
         if Hi > Lo then T := (Values[R, C] - Lo) / (Hi - Lo);
         SB.Append('<rect ' + Pos + ' fill="' + HeatColor(T) + '" stroke="#ffffff"/>');
         SB.Append('<text x="' + IntToStr(X + CS div 2) + '" y="' + IntToStr(Y + CS - 6) +

@@ -54,9 +54,9 @@ implementation
 
 function Cosine(const A, B: TArray<Double>): Double;
 begin
-  var D := 0.0;
-  var NA := 0.0;
-  var NB := 0.0;
+  var D: Double := 0.0;
+  var NA: Double := 0.0;
+  var NB: Double := 0.0;
   for var I := 0 to High(A) do
   begin
     D := D + A[I] * B[I];
@@ -90,7 +90,7 @@ end;
 /// GradW acumula lo que hay que sumarle después al vector de la palabra.
 procedure Step(var WV, CV: TArray<Double>; RowW, RowC, Dim: Integer; Lbl, Rate: Double; var GradW: TArray<Double>);
 begin
-  var Dot := 0.0;
+  var Dot: Double := 0.0;
   for var K := 0 to Dim - 1 do
     Dot := Dot + WV[RowW + K] * CV[RowC + K];
   var G := Rate * (Lbl - Sigma(Dot));

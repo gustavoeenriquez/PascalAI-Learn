@@ -225,7 +225,7 @@ begin
       var RowG := I * M;
       var RowB := KK * M;
       var AIK := A[I * K + KK];
-      var S := 0.0;
+      var S: Double := 0.0;
       for var J := 0 to M - 1 do
       begin
         var GIJ := G[RowG + J];
@@ -255,7 +255,7 @@ begin
     for var J := 1 to Last do
       if X[I * M + J] > Mx then
         Mx := X[I * M + J];
-    var S := 0.0;
+    var S: Double := 0.0;
     for var J := 0 to M - 1 do
     begin
       if J <= Last then
@@ -273,7 +273,7 @@ procedure SoftmaxBackward(const Y, G: TArray<Double>; var GA: TArray<Double>; N,
 begin
   for var I := 0 to N - 1 do
   begin
-    var Dot := 0.0;
+    var Dot: Double := 0.0;
     for var J := 0 to M - 1 do
       Dot := Dot + G[I * M + J] * Y[I * M + J];
     for var J := 0 to M - 1 do
@@ -495,7 +495,7 @@ function TTensor.Sum: TTensor;
 begin
   var NA := Node;
   Result := NewTensor(1, 1, [NA], 'sum');
-  var S := 0.0;
+  var S: Double := 0.0;
   for var X in NA.Data do
     S := S + X;
   Result.Node.Data[0] := S;
@@ -574,14 +574,14 @@ begin
   // softmax estable por filas, guardada para el paso hacia atrás
   var P: TArray<Double>;
   SetLength(P, N * M);
-  var Loss := 0.0;
+  var Loss: Double := 0.0;
   for var I := 0 to N - 1 do
   begin
     var Mx := NL.Data[I * M];
     for var J := 1 to M - 1 do
       if NL.Data[I * M + J] > Mx then
         Mx := NL.Data[I * M + J];
-    var S := 0.0;
+    var S: Double := 0.0;
     for var J := 0 to M - 1 do
     begin
       P[I * M + J] := System.Exp(NL.Data[I * M + J] - Mx);
@@ -614,7 +614,7 @@ begin
     var Mx := Logits.Get(I, 0);
     for var J := 1 to M - 1 do
       Mx := Max(Mx, Logits.Get(I, J));
-    var S := 0.0;
+    var S: Double := 0.0;
     for var J := 0 to M - 1 do
     begin
       Result[I, J] := System.Exp(Logits.Get(I, J) - Mx);

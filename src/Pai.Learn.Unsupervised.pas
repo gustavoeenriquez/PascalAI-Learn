@@ -118,7 +118,7 @@ begin
   SetLength(Result.Mean, D);
   for var J := 0 to D - 1 do
   begin
-    var S := 0.0;
+    var S: Double := 0.0;
     for var I := 0 to N - 1 do
       S := S + X[I, J];
     Result.Mean[J] := S / N;

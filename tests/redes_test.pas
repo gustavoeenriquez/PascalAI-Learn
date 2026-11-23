@@ -30,8 +30,8 @@ begin
   Assert.Equal(4 * 8 + 8 + 8 * 3 + 3, Red.ParameterCount);
   var Opt := TAdam.Create(Red.Parameters, 0.05);
   var X := TTensor.FromMatrix(Tr.X);
-  var Primera := 0.0;
-  var Ultima := 0.0;
+  var Primera: Double := 0.0;
+  var Ultima: Double := 0.0;
   for var E := 1 to 150 do
   begin
     Opt.ZeroGrad;

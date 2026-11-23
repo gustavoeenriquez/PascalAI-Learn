@@ -115,7 +115,7 @@ begin
     SetLength(GW, X.Cols);
     for var J := 0 to X.Cols - 1 do
       GW[J] := 0;
-    var GB := 0.0;
+    var GB: Double := 0.0;
     for var I := 0 to N - 1 do
     begin
       var Err := Predict(X.Row(I)) - Y[I];
@@ -160,7 +160,7 @@ begin
     SetLength(GW, X.Cols);
     for var J := 0 to X.Cols - 1 do
       GW[J] := 0;
-    var GB := 0.0;
+    var GB: Double := 0.0;
     for var I := 0 to N - 1 do
     begin
       var Err := Probability(X.Row(I)) - Y[I];
@@ -250,7 +250,7 @@ begin
   // la mejor pregunta: la que deja menos impureza (Gini ponderado por tamaño)
   var Best := Result.Gini;
   var BestF := -1;
-  var BestT := 0.0;
+  var BestT: Double := 0.0;
   for var F := 0 to X.Cols - 1 do
   begin
     // los umbrales posibles: el punto medio entre valores distintos, ordenados
