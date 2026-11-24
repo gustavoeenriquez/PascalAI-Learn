@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>La Montaña Chat</title>
+<style>
+  :root {
+    --fondo: #efe7dc; --cafe: #5b3a29; --cafe2: #7a4e36; --verde: #2f6b4f; --yo: #dcefd9; --el: #ffffff;
+    --tinta: #1f1a17; --gris: #7b716a; --borde: #d9cfc4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1920px; height: 1080px; background: #2b211c; font-family: "Segoe UI", system-ui, sans-serif; color: var(--tinta);
+         display: flex; gap: 40px; padding: 40px 60px; overflow: hidden; }
+  .tel { width: 760px; height: 1000px; background: var(--fondo); border-radius: 28px; display: flex; flex-direction: column; overflow: hidden;
+         box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+  .cab { background: var(--cafe); color: #fff; padding: 22px 28px; display: flex; align-items: center; gap: 18px; }
+  .cab .av { width: 58px; height: 58px; border-radius: 50%; background: #f3d9b1; color: var(--cafe); font-size: 32px; display: flex;
+             align-items: center; justify-content: center; }
+  .cab b { font-size: 27px; display: block; }
+  .cab small { font-size: 19px; opacity: .85; }
+  #msgs { flex: 1; overflow-y: auto; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+  .m { max-width: 82%; padding: 14px 18px 22px; border-radius: 18px; font-size: 23px; line-height: 1.35; position: relative; white-space: pre-wrap;
+       box-shadow: 0 1px 2px rgba(0,0,0,.12); animation: entra .25s ease-out; }
+  .m.yo { align-self: flex-end; background: var(--yo); border-bottom-right-radius: 6px; }
+  .m.el { align-self: flex-start; background: var(--el); border-bottom-left-radius: 6px; }
+  .m.aviso { border-left: 6px solid #d9822b; }
+  .m .h { position: absolute; right: 14px; bottom: 5px; font-size: 15px; color: var(--gris); }
+  .m .et { display: block; font-size: 17px; font-weight: 700; color: #d9822b; margin-bottom: 4px; }
+  .m.preg { border-left: 6px solid var(--verde); }
+  .btns { display: flex; gap: 12px; margin-top: 12px; }
+  .btns button { flex: 1; font-size: 22px; padding: 10px; border-radius: 12px; border: 2px solid var(--verde); background: #fff; color: var(--verde);
+                 font-weight: 600; cursor: pointer; }
+  .btns button.si.hecho { background: var(--verde); color: #fff; }
+  .btns button.no.hecho { background: #a33; border-color: #a33; color: #fff; }
+  .btns button:disabled { opacity: .55; }
+  .btns button.hecho { opacity: 1; }
+  .escribe { align-self: flex-start; background: #fff; border-radius: 18px; padding: 14px 20px; font-size: 21px; color: var(--gris); display: none; }
+  .escribe.on { display: block; }
+  .pie { display: flex; gap: 14px; padding: 18px; background: #f7f2ec; border-top: 1px solid var(--borde); }
+  .pie input { flex: 1; font-size: 23px; padding: 14px 20px; border-radius: 26px; border: 1px solid var(--borde); outline: none; }
+  .pie button { width: 62px; height: 62px; border-radius: 50%; border: none; background: var(--verde); color: #fff; font-size: 28px; }
+  .panel { flex: 1; background: #fbf8f4; border-radius: 28px; padding: 30px 36px; overflow: hidden; display: flex; flex-direction: column;
+           box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+  .panel h2 { margin: 0 0 6px; font-size: 32px; color: var(--cafe); }
+  .panel .sub { color: var(--gris); font-size: 20px; margin-bottom: 18px; }
+  .panel h3 { font-size: 22px; color: var(--cafe2); margin: 18px 0 10px; text-transform: uppercase; letter-spacing: .04em; }
+  .mail { background: #fff; border: 1px solid var(--borde); border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; font-size: 20px; animation: entra .3s; }
+  .mail b { display: block; font-size: 21px; }
+  .mail .de { color: var(--gris); font-size: 18px; }
+  .mail .cu { margin-top: 6px; font-size: 18px; color: #3d3530; white-space: pre-wrap; max-height: 150px; overflow: hidden; }
+  .mail.nuevo { border-left: 6px solid #d9822b; }
+  .mail.env { border-left: 6px solid var(--verde); }
+  pre.md { background: #fff; border: 1px solid var(--borde); border-radius: 14px; padding: 18px 22px; font-size: 21px; line-height: 1.45;
+           white-space: pre-wrap; font-family: Consolas, monospace; margin: 0 0 12px; }
+  .vacio { color: var(--gris); font-size: 20px; font-style: italic; }
+  @keyframes entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="tel">
+  <div class="cab"><div class="av">☕</div><div><b>Asistente · Café La Montaña</b><small id="estado">en línea</small></div></div>
+  <div id="msgs"><div class="escribe" id="escribe">escribiendo…</div></div>
+  <div class="pie"><input id="txt" placeholder="Escribe un mensaje" autocomplete="off"><button id="env">➤</button></div>
+</div>
+<div class="panel" id="panel"></div>
+<script>
+const msgs = document.getElementById('msgs'), esc = document.getElementById('escribe');
+const hora = () => new Date().toTimeString().slice(0, 5);
+const html = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
+window.esperando = 0;
+function burbuja(clase, texto, etiqueta) {
+  const d = document.createElement('div');
+  d.className = 'm ' + clase;
+  d.innerHTML = (etiqueta ? '<span class="et">' + etiqueta + '</span>' : '') + html(texto.trim()) + '<span class="h">' + hora() + '</span>';
+  msgs.insertBefore(d, esc);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+window.http = false;
+function logHttp(ruta, d, r) {
+  if (!window.http || ruta.startsWith('/buzon')) return;
+  const p = document.getElementById('panel');
+  const e = document.createElement('div'); e.className = 'mail env';
+  const corto = x => { const t = JSON.stringify(x); return t.length > 260 ? t.slice(0, 257) + '…"' : t; };
+  e.innerHTML = '<b>POST ' + ruta + '</b><div class="cu">' + html(corto(d)) + '<br>→ ' + html(corto(r)) + '</div>';
+  p.appendChild(e);
+  while (p.scrollHeight > p.clientHeight && p.children.length > 3) p.removeChild(p.children[2]);
+}
+async function post(ruta, d) {
+  const r = await fetch(ruta, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) });
+  const j = await r.json();
+  logHttp(ruta, d, j);
+  return j;
+}
+async function enviar() {
+  const i = document.getElementById('txt'), t = i.value.trim();
+  if (!t) return;
+  i.value = '';
+  burbuja('yo', t);
+  window.esperando++;
+  esc.classList.add('on'); msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('estado').textContent = 'escribiendo…';
+  try {
+    const r = await post('/chat/Enviar', { Texto: t });
+    burbuja('el', r.result !== undefined ? r.result : ('⚠️ ' + (r.error ? r.error.message : 'error')));
+  } finally {
+    window.esperando--;
+    if (!window.esperando) { esc.classList.remove('on'); document.getElementById('estado').textContent = 'en línea'; }
+  }
+}
+document.getElementById('env').onclick = enviar;
+document.getElementById('txt').addEventListener('keydown', e => { if (e.key === 'Enter') enviar(); });
+const vistas = new Set();
+window.preguntas = 0;
+async function sondear() {
+  try {
+    const p = (await post('/buzon/Pendientes', {})).result;
+    for (const m of p.Mensajes) burbuja('el aviso', m, '🔔 Aviso');
+    for (const q of p.Preguntas) {
+      if (vistas.has(q.Id)) continue;
+      vistas.add(q.Id); window.preguntas++;
+      const d = burbuja('el preg', q.Texto, '✋ Necesito tu permiso');
+      const b = document.createElement('div'); b.className = 'btns';
+      b.innerHTML = '<button class="si">Sí</button><button class="no">No</button>';
+      d.insertBefore(b, d.querySelector('.h'));
+      for (const [sel, resp] of [['.si', 'sí'], ['.no', 'no']])
+        b.querySelector(sel).onclick = async () => {
+          b.querySelectorAll('button').forEach(x => x.disabled = true);
+          b.querySelector(sel).classList.add('hecho');
+          await post('/buzon/Responder', { Id: q.Id, Respuesta: resp });
+        };
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+  } catch (e) {}
+  setTimeout(sondear, 800);
+}
+sondear();
+// El panel de la derecha lo pone el grabador: setPanel(titulo, subtitulo, html)
+window.setPanel = (t, s, h) => { document.getElementById('panel').innerHTML = '<h2>' + t + '</h2><div class="sub">' + s + '</div>' + h; };
+</script>
+</body>
+</html>

@@ -61,6 +61,7 @@ English or Portuguese. To use `pai learn` from the console, put the editor's fol
 | `cursos/colegio/`, `cursos/universidad/` | The lessons: `LEEME.md` (and `LEEME.en.md`, `LEEME.pt.md`), `inicio.pas` (with gaps) and `pruebas.pas` (school 01-10 and university 01-13) |
 | `datos/` | The data that doesn't fit in the code, and `DATOS.md` with the origin and license of each |
 | `tests/` | The library tests (`pai test`) |
+| `ejemplos/arnes/` | A harness like OpenClaw: an assistant with chat, memory, skills, mail, heartbeat and permissions ([README](ejemplos/arnes/README.en.md)) |
 | `tools/` | `test.sh` |
 
 Solutions and rubrics are in a private repository for teachers.

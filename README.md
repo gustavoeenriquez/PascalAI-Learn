@@ -58,6 +58,7 @@ pon la carpeta del editor en el `PATH`.
 | `cursos/colegio/`, `cursos/universidad/` | Las lecciones: `LEEME.md`, `inicio.pas` (con huecos) y `pruebas.pas` (colegio 01-10 y universidad 01-13) |
 | `datos/` | Los datos que no caben en el código, y `DATOS.md` con el origen y la licencia de cada uno |
 | `tests/` | Las pruebas de la biblioteca (`pai test`) |
+| `ejemplos/arnes/` | Un arnés como OpenClaw: un asistente con chat, memoria, skills, correo, latido y permisos ([LEEME](ejemplos/arnes/LEEME.md)) |
 | `tools/` | `test.sh` |
 
 Las soluciones y las rúbricas están en un repositorio privado para docentes.
